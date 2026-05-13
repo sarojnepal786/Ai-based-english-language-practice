@@ -1,0 +1,10 @@
+{
+  "name": "ai-based-english-language-practice-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix ielts-practice run dev --",
+    "build": "npm --prefix ielts-practice run build",
+    "lint": "npm --prefix ielts-practice run lint",
+    "preview": "npm --prefix ielts-practice run preview"
+  }
+}

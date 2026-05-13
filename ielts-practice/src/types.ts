@@ -31,6 +31,13 @@ export interface Module {
   title: string;
   duration: string;
   content: string;
+  fullContent?: string;
+  summary?: string;
+  wordCount?: number;
+  readingTime?: number;
+  objectives?: string[];
+  materials?: string[];
+  assignments?: string[];
   quiz?: Quiz;
 }
 
