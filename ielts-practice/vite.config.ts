@@ -38,6 +38,49 @@ const toEstimatedDuration = (text: string | null) => {
   return `${minutes} min`
 }
 
+const ollamaApiPlugin = (): Plugin => ({
+  name: 'ollama-api',
+  configureServer(server) {
+    server.middlewares.use('/api/ollama/generate', async (req, res, next) => {
+      if (req.method !== 'POST') {
+        next()
+        return
+      }
+
+      try {
+        let body = ''
+        req.on('data', (chunk) => {
+          body += chunk
+        })
+
+        await new Promise<void>((resolve, reject) => {
+          req.on('end', () => resolve())
+          req.on('error', reject)
+        })
+
+        const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
+        const upstream = await fetch(`${ollamaBaseUrl}/api/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body
+        })
+
+        const text = await upstream.text()
+        res.statusCode = upstream.status
+        res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/json')
+        res.end(text)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Ollama proxy error'
+        res.statusCode = 500
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: message }))
+      }
+    })
+  }
+})
+
 const curriculumApiPlugin = (): Plugin => {
   const pool = createDbPool()
 
@@ -135,5 +178,5 @@ const curriculumApiPlugin = (): Plugin => {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), curriculumApiPlugin()]
+  plugins: [react(), curriculumApiPlugin(), ollamaApiPlugin()]
 })

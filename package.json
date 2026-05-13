@@ -5,6 +5,8 @@
     "dev": "npm --prefix ielts-practice run dev --",
     "build": "npm --prefix ielts-practice run build",
     "lint": "npm --prefix ielts-practice run lint",
-    "preview": "npm --prefix ielts-practice run preview"
+    "preview": "npm --prefix ielts-practice run preview",
+    "infra:up": "docker compose --env-file docker/.env -f docker/docker_compose.yml up -d",
+    "infra:down": "docker compose --env-file docker/.env -f docker/docker_compose.yml down"
   }
 }

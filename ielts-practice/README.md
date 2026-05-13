@@ -1,73 +1,50 @@
-# React + TypeScript + Vite
+# IELTS Practice App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a Vite + React + TypeScript app with:
 
-Currently, two official plugins are available:
+- IELTS course modules and quiz buckets
+- Chat assistant with image/file analysis
+- PostgreSQL-backed curriculum import endpoint
+- Bundled local LLM runtime via Docker Compose (Ollama)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Run with Bundled LLM (No Separate Ollama Install)
 
-## React Compiler
+From the workspace root:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run infra:up
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+This starts:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- PostgreSQL (`postgres_ielts123`)
+- Ollama server (`ollama_local`)
+- Auto model pull job (`ollama_model_init`) for:
+  - `gemma3:4b`
+  - `llava:latest`
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Then start the app:
+
+```bash
+npm run dev
 ```
+
+The chat page uses `/api/ollama/generate` through the Vite proxy middleware.
+
+## Stop Infrastructure
+
+```bash
+npm run infra:down
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+## Notes
+
+- You do not need a separately installed Ollama daemon for this setup.
+- Models are still stored on disk inside Docker volume `ollama_data`.
+- First startup can take time while models download.

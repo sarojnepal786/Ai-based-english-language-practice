@@ -17,5 +17,36 @@ services:
       timeout: 5s
       retries: 5
 
+  ollama_local:
+    image: ollama/ollama:latest
+    container_name: ollama_local
+    restart: unless-stopped
+    command: ["serve"]
+    ports:
+      - "${OLLAMA_PORT}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  ollama_model_init:
+    image: ollama/ollama:latest
+    container_name: ollama_model_init
+    depends_on:
+      - ollama_local
+    restart: "no"
+    environment:
+      OLLAMA_HOST: http://ollama_local:11434
+      OLLAMA_TEXT_MODEL: ${OLLAMA_TEXT_MODEL}
+      OLLAMA_VISION_MODEL: ${OLLAMA_VISION_MODEL}
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      echo "Waiting for Ollama API..." &&
+      until ollama list >/dev/null 2>&1; do sleep 2; done &&
+      echo "Pulling text model: ${OLLAMA_TEXT_MODEL}" &&
+      ollama pull ${OLLAMA_TEXT_MODEL} &&
+      echo "Pulling vision model: ${OLLAMA_VISION_MODEL}" &&
+      ollama pull ${OLLAMA_VISION_MODEL} &&
+      echo "Model initialization complete"
+
 volumes:
   postgres_ielts123_data:
+  ollama_data:

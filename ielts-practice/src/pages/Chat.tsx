@@ -405,7 +405,7 @@ function Chat() {
           const base64Data = userFilePreview.split(',')[1]
           
           // Use LLaVA model for image analysis
-          response = await fetch('http://localhost:11434/api/generate', {
+          response = await fetch('/api/ollama/generate', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -432,7 +432,7 @@ function Chat() {
           
         } catch (visionError) {
           console.error('LLaVA error:', visionError)
-          botResponseText = `⚠️ I couldn't analyze the image with LLaVA. Please make sure the model is properly installed with 'ollama pull llava'. Error: ${visionError}`
+          botResponseText = `⚠️ I couldn't analyze the image with LLaVA. Please make sure the bundled Ollama container is running and model pull completed. Error: ${visionError}`
         }
       } 
       // Handle text files and documents with qwen model
@@ -450,7 +450,7 @@ function Chat() {
         prompt += `User's question: ${userInput || "Please analyze this file"}\n\n`
         prompt += `Provide helpful assistance based on the file content and user's question. If the file contains text, use that information to answer.`
 
-        response = await fetch('http://localhost:11434/api/generate', {
+        response = await fetch('/api/ollama/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -482,10 +482,10 @@ function Chat() {
       setMessages(prev => [...prev, botResponse])
       
     } catch (error) {
-      console.error('Error calling Ollama:', error)
+      console.error('Error calling Ollama proxy:', error)
       const errorMessage: Message = {
         id: messages.length + 2,
-        text: "⚠️ Unable to connect to Ollama. Please make sure Ollama is running with 'ollama serve'.\n\nMake sure you have the required models installed:\n• For images: `ollama pull llava`\n• For text: `ollama pull gemma3:4b`",
+        text: "⚠️ Unable to connect to the LLM service. Start the bundled stack with Docker Compose in the `docker/` folder.\n\nExpected models:\n• Vision: `llava:latest`\n• Text: `gemma3:4b`",
         sender: 'bot'
       }
       setMessages(prev => [...prev, errorMessage])
