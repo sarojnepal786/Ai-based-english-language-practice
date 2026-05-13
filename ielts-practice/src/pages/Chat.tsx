@@ -1,6 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import mammoth from 'mammoth'
-import Tesseract from 'tesseract.js'
 import '../App.css'
 import type { Message } from '../types'
 
@@ -142,6 +140,7 @@ function Chat() {
   // Perform OCR on image
   const performOCR = async (imageData: string): Promise<string> => {
     try {
+      const Tesseract = await import('tesseract.js')
       setOcrProgress('Recognizing text from image...')
       const { data } = await Tesseract.recognize(
         imageData,
@@ -264,6 +263,7 @@ function Chat() {
       // Word documents
       else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         try {
+          const mammoth = await import('mammoth')
           const arrayBuffer = await file.arrayBuffer()
           const result = await mammoth.extractRawText({ arrayBuffer })
           return { content: result.value, preview: null }

@@ -1,15 +1,40 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import Home from './pages/Home'
-import SignIn from './pages/SignIn'
-import SignUp from './pages/SignUp'
-import Dashboard from './pages/Dashboard'
-import Chat from './pages/Chat'
 import './App.css'
 
 import type { User, Course } from './types'
 
+const Home = lazy(() => import('./pages/Home'));
+const SignIn = lazy(() => import('./pages/SignIn'));
+const SignUp = lazy(() => import('./pages/SignUp'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Chat = lazy(() => import('./pages/Chat'));
+
 // Types are defined centrally in src/types.ts for reuse across components and pages.
+
+const hydrateUser = (rawUser: string): User | null => {
+  try {
+    const parsed = JSON.parse(rawUser) as User;
+    const safeProgress = Object.fromEntries(
+      Object.entries(parsed.progress || {}).map(([courseId, value]) => [
+        courseId,
+        {
+          completedModules: Array.isArray(value.completedModules) ? value.completedModules : [],
+          quizScores: value.quizScores || {},
+          lastAccessed: new Date(value.lastAccessed)
+        }
+      ])
+    );
+
+    return {
+      ...parsed,
+      enrolledCourses: Array.isArray(parsed.enrolledCourses) ? parsed.enrolledCourses : [],
+      progress: safeProgress
+    };
+  } catch {
+    return null;
+  }
+};
 
 // Mock Course Data
 const courses: Course[] = [
@@ -148,6 +173,53 @@ const courses: Course[] = [
         content: 'Speed reading and skimming techniques for IELTS reading passages.'
       }
     ]
+  },
+  {
+    id: '4',
+    title: 'GRE Verbal and Analytical Writing',
+    description: 'Build GRE-level reading precision, vocabulary depth, and essay argument quality',
+    instructor: 'Dr. Nathan Brooks',
+    level: 'Advanced',
+    duration: '12 weeks',
+    thumbnail: 'https://images.unsplash.com/photo-1513258496099-48168024aec0?w=400',
+    enrolled: 1046,
+    rating: 4.9,
+    modules: [
+      {
+        id: 1,
+        title: 'Text Completion and Sentence Equivalence',
+        duration: '75 min',
+        content: 'Master context clues, logical contrast, and nuanced vocabulary selection for GRE verbal questions.',
+        quiz: {
+          questions: [
+            {
+              id: 1,
+              question: 'What is the best first step in a GRE text completion question?',
+              options: [
+                'Choose the longest option',
+                'Identify the sentence logic and signal words',
+                'Skip vocabulary analysis',
+                'Pick rare words first'
+              ],
+              correct: 1,
+              explanation: 'Signal words and sentence logic help narrow the meaning before checking choices.'
+            }
+          ]
+        }
+      },
+      {
+        id: 2,
+        title: 'Argument Structure for GRE Essays',
+        duration: '80 min',
+        content: 'Develop thesis clarity, counterargument strategy, and evidence depth for issue and argument tasks.'
+      },
+      {
+        id: 3,
+        title: 'Complex Passage Reasoning',
+        duration: '65 min',
+        content: 'Practice identifying claims, assumptions, and author stance across dense humanities passages.'
+      }
+    ]
   }
 ];
 
@@ -155,12 +227,15 @@ function AppContent() {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('english_learning_user');
     if (savedUser) {
+      const hydrated = hydrateUser(savedUser);
+      if (hydrated) {
+        return hydrated;
+      }
+
       try {
-        return JSON.parse(savedUser);
-      } catch (error) {
-        console.error('Failed to parse saved user:', error);
         localStorage.removeItem('english_learning_user');
-        return null;
+      } catch (error) {
+        console.error('Failed to clean invalid user data:', error);
       }
     }
     return null;
@@ -229,34 +304,36 @@ function AppContent() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/signin" element={<SignIn onLogin={handleLogin} />} />
-        <Route path="/signup" element={<SignUp onRegister={handleRegister} />} />
-        
-        {/* Protected route - Dashboard */}
-        <Route 
-          path="/dashboard" 
-          element={
-            currentUser ? (
-              <Dashboard
-                currentUser={currentUser}
-                onLogout={handleLogout}
-                courses={courses}
-                onEnrollCourse={enrollInCourse}
-                onUpdateProgress={updateProgress}
-              />
-            ) : (
-              <Navigate to="/signin" replace />
-            )
-          }
-        />
+      <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center' }}>Loading learning platform...</div>}>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/signin" element={<SignIn onLogin={handleLogin} />} />
+          <Route path="/signup" element={<SignUp onRegister={handleRegister} />} />
+          
+          {/* Protected route - Dashboard */}
+          <Route 
+            path="/dashboard" 
+            element={
+              currentUser ? (
+                <Dashboard
+                  currentUser={currentUser}
+                  onLogout={handleLogout}
+                  courses={courses}
+                  onEnrollCourse={enrollInCourse}
+                  onUpdateProgress={updateProgress}
+                />
+              ) : (
+                <Navigate to="/signin" replace />
+              )
+            }
+          />
 
-        {/* Fallback route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Fallback route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </div>
   );
 }

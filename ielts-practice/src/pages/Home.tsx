@@ -17,8 +17,8 @@ export default function Home() {
       </header>
 
       <div className="home-hero">
-        <h1>Master English with AI-Powered Learning</h1>
-        <p>Learn grammar, business English, and prepare for IELTS with personalized assistance</p>
+        <h1>Master IELTS and GRE with AI-Powered Training</h1>
+        <p>Advanced support for reading, writing, listening, and speaking with adaptive coaching and feedback.</p>
         <div className="hero-buttons">
           <button onClick={() => navigate('/signin')} className="cta-button">
             Get Started
@@ -32,23 +32,23 @@ export default function Home() {
       <div className="home-features">
         <div className="feature">
           <span className="feature-icon">🎓</span>
-          <h3>Structured Courses</h3>
-          <p>Learn from beginner to advanced level with comprehensive modules</p>
+          <h3>IELTS and GRE Tracks</h3>
+          <p>Structured prep paths for academic English, verbal reasoning, and test-day strategy.</p>
         </div>
         <div className="feature">
           <span className="feature-icon">🤖</span>
-          <h3>AI Assistant</h3>
-          <p>Get instant help with your English learning questions</p>
+          <h3>Adaptive AI Coach</h3>
+          <p>Get personalized recommendations based on your latest skill performance.</p>
         </div>
         <div className="feature">
           <span className="feature-icon">📄</span>
-          <h3>File Analysis</h3>
-          <p>Upload PDFs, images, or documents for text extraction and analysis</p>
+          <h3>Reading and Listening Lab</h3>
+          <p>Analyze passages, notes, and transcripts with exam-focused comprehension drills.</p>
         </div>
         <div className="feature">
           <span className="feature-icon">📊</span>
-          <h3>Track Progress</h3>
-          <p>Monitor your learning journey with detailed progress tracking</p>
+          <h3>Writing and Speaking Feedback</h3>
+          <p>Receive rubric-based scoring with strengths, improvements, and next-step plans.</p>
         </div>
       </div>
 

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd ielts-practice && npm ci",
+  "buildCommand": "cd ielts-practice && npm run build",
+  "outputDirectory": "ielts-practice/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

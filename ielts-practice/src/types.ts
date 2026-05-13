@@ -51,3 +51,42 @@ export interface Message {
   imagePreview?: string | null;
   timestamp?: Date;
 }
+
+export type ExamTrack = 'IELTS' | 'GRE';
+
+export type SkillType = 'Reading' | 'Writing' | 'Listening' | 'Speaking';
+
+export interface PerformanceSnapshot {
+  averageScore: number;
+  attempts: number;
+  updatedAt: string;
+}
+
+export interface UserPerformance {
+  byTrack: Record<ExamTrack, Record<SkillType, PerformanceSnapshot>>;
+}
+
+export interface PracticeTask {
+  id: string;
+  title: string;
+  track: ExamTrack;
+  skill: SkillType;
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  estimatedMinutes: number;
+  prompt: string;
+  tips: string[];
+  rubric: string[];
+  sampleHighlights: string[];
+}
+
+export interface EvaluationResult {
+  overallBand: number;
+  criteria: {
+    name: string;
+    score: number;
+    feedback: string;
+  }[];
+  strengths: string[];
+  improvements: string[];
+  nextActions: string[];
+}

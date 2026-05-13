@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { User, Course, Module } from '../types';
+import SkillLab from '../components/SkillLab';
 import '../styles/Dashboard.css';
 
 interface DashboardProps {
@@ -24,6 +25,25 @@ export default function Dashboard({
   const [quizAnswers, setQuizAnswers] = useState<{ [key: number]: number }>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
+
+  const totalCompletedModules = Object.values(currentUser?.progress || {}).reduce(
+    (sum, courseProgress) => sum + courseProgress.completedModules.length,
+    0
+  );
+
+  const averageProgress = (() => {
+    const progressValues = Object.entries(currentUser?.progress || {});
+    if (progressValues.length === 0) return 0;
+
+    const avgProgress =
+      progressValues.reduce((sum, [courseId, courseProgress]) => {
+        const course = courses.find((c) => c.id === courseId);
+        const percent = course ? (courseProgress.completedModules.length / course.modules.length) * 100 : 0;
+        return sum + percent;
+      }, 0) / progressValues.length;
+
+    return Math.round(avgProgress);
+  })();
 
   useEffect(() => {
     if (!currentUser) {
@@ -174,23 +194,14 @@ export default function Dashboard({
             <div className="stat-card">
               <span className="stat-icon">✅</span>
               <div>
-                <h3>{Object.values(currentUser?.progress || {}).reduce((sum, course) => sum + course.completedModules.length, 0)}</h3>
+                <h3>{totalCompletedModules}</h3>
                 <p>Modules Completed</p>
               </div>
             </div>
             <div className="stat-card">
               <span className="stat-icon">📊</span>
               <div>
-                <h3>{(() => {
-                  const progressValues = Object.entries(currentUser?.progress || {});
-                  if (progressValues.length === 0) return 0;
-                  const avgProgress = progressValues.reduce((sum, [courseId, courseProgress]) => {
-                    const course = courses.find(c => c.id === courseId);
-                    const percent = course ? (courseProgress.completedModules.length / course.modules.length) * 100 : 0;
-                    return sum + percent;
-                  }, 0) / progressValues.length;
-                  return Math.round(avgProgress);
-                })()}%</h3>
+                <h3>{averageProgress}%</h3>
                 <p>Average Progress</p>
               </div>
             </div>
@@ -241,6 +252,8 @@ export default function Dashboard({
               })}
             </div>
           </div>
+
+          <SkillLab currentUser={currentUser} />
         </div>
       )}
     </div>
